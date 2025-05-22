@@ -9,14 +9,14 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "express": "^5.1.0",
-    "express-session": "^1.18.1",
-    "lodash": "^4.17.21",
-    "redux": "^5.0.1",
-    "uuid": "^11.1.0",
-    "ws": "^8.18.2"
+    "express": "5.1.0",
+    "express-session": "1.18.1",
+    "lodash": "4.17.21",
+    "redux": "5.0.1",
+    "uuid": "11.1.0",
+    "ws": "8.18.2"
   },
   "devDependencies": {
-    "parcel": "^2.15.1"
+    "parcel": "2.15.1"
   }
 }

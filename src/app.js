@@ -3,7 +3,7 @@ let socket
 
 const connect = () => {
   // Create WebSocket connection.
-  socket = new WebSocket("ws://localhost:8080");
+  socket = new WebSocket(`ws://${window.location.host}`);
 
   // Connection opened
   socket.addEventListener("open", (event) => {
@@ -21,7 +21,7 @@ loginForm.addEventListener('submit', e => {
   e.preventDefault()
   const formData = new FormData(loginForm)
   const name = formData.get('name')
-  fetch('http://localhost:8080/login', { method: 'POST', body: JSON.stringify({ name }), headers: { 'content-type': 'application/json' } })
+  fetch('/login', { method: 'POST', body: JSON.stringify({ name }), headers: { 'content-type': 'application/json' } })
     .then(i => i.json())
     .then(connect)
 })
