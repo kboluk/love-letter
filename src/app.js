@@ -3,7 +3,7 @@ let socket
 
 const connect = () => {
   // Create WebSocket connection.
-  socket = new WebSocket(`ws://${window.location.host}`);
+  socket = new WebSocket(`ws${window.location.protocol === 'https:' ? 's' : ''}://${window.location.host}`);
 
   // Connection opened
   socket.addEventListener("open", (event) => {
