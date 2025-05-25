@@ -58,7 +58,9 @@ const initialState = {
   'p4#hand': [],
   'p1#state': {
     activePlayer: 'p1',
+    position: 'p1',
     latest: '',
+    deckSize: 16,
     hand: [],
     handSizes: [1, 1, 1, 1],
     names: [],
@@ -69,7 +71,9 @@ const initialState = {
   },
   'p2#state': {
     activePlayer: 'p1',
+    position: 'p2',
     latest: '',
+    deckSize: 16,
     hand: [],
     handSizes: [1, 1, 1, 1],
     names: [],
@@ -80,7 +84,9 @@ const initialState = {
   },
   'p3#state': {
     activePlayer: 'p1',
+    position: 'p3',
     latest: '',
+    deckSize: 16,
     hand: [],
     handSizes: [1, 1, 1, 1],
     names: [],
@@ -91,7 +97,9 @@ const initialState = {
   },
   'p4#state': {
     activePlayer: 'p1',
+    position: 'p4',
     latest: '',
+    deckSize: 16,
     hand: [],
     handSizes: [1, 1, 1, 1],
     names: [],
@@ -265,7 +273,9 @@ const playbook = {
       'p4#hand': state.activePlayer === 'p4' ? activePlayerHand : hands[3],
       'p1#state': {
         activePlayer: state.activePlayer,
+        position: 'p1',
         latest: '',
+        deckSize: deck.length,
         hand: state.activePlayer === 'p1' ? activePlayerHand : hands[0],
         handSizes,
         'p1#discard': [],
@@ -276,7 +286,9 @@ const playbook = {
       },
       'p2#state': {
         activePlayer: state.activePlayer,
+        position: 'p2',
         latest: '',
+        deckSize: deck.length,
         hand: state.activePlayer === 'p2' ? activePlayerHand : hands[1],
         handSizes,
         'p1#discard': [],
@@ -287,7 +299,9 @@ const playbook = {
       },
       'p3#state': {
         activePlayer: state.activePlayer,
+        position: 'p3',
         latest: '',
+        deckSize: deck.length,
         hand: state.activePlayer === 'p3' ? activePlayerHand : hands[2],
         handSizes,
         'p1#discard': [],
@@ -298,7 +312,9 @@ const playbook = {
       },
       'p4#state': {
         activePlayer: state.activePlayer,
+        position: 'p4',
         latest: '',
+        deckSize: deck.length,
         hand: state.activePlayer === 'p4' ? activePlayerHand : hands[3],
         handSizes,
         'p1#discard': [],

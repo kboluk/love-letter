@@ -19,5 +19,8 @@
   },
   "devDependencies": {
     "parcel": "2.15.1"
-  }
+  },
+  "alias": {
+  "preact/jsx-dev-runtime": "preact/jsx-runtime"
+}
 }

@@ -1,3 +1,158 @@
-h1 {
-  color: hotpink
+body {
+  font-family: Helvetica, sans-serif;
+}
+
+h3 {
+  text-align: center;
+}
+
+.panel {
+  background-color: rgba(255, 255, 255, 0.5);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  position: relative;
+}
+
+.board {
+  max-width: 921px;
+  height: 800px;
+  margin: 0 auto;
+  display: grid;
+  justify-content: space-around;
+  align-content: space-around;
+  grid-template-columns: 25% 25% 25%;
+  grid-template-rows: 25% 25% 25%;
+  grid-template-areas:
+    ". p2 ."
+    "p1 shared p3"
+    ". p4 .";
+  background-image: url('https://ik.imagekit.io/v1yrj03ct/love-letter/background.jpg')
+  
+}
+
+.hand {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  li {
+    display: grid;
+  }
+}
+
+.discard {
+  position: absolute;
+  height: 50px;
+  width: 100%;
+  bottom: -35px;
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-rows: 1fr;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+  li {
+    display: grid;
+  }
+}
+
+.val {
+  background-image: url('https://ik.imagekit.io/v1yrj03ct/love-letter/cardnumbers.png');
+  background-size: cover;
+  &.priest {
+    background-position-x: -50;
+  }
+  &.baron {
+    background-position-x: -100;
+  }
+  &.handmaid {
+    background-position-x: -150;
+  }
+  &.prince {
+    background-position-x: -200;
+  }
+  &.king {
+    background-position-x: -250;
+  }
+  &.countess {
+    background-position-x: -300;
+  }
+  &.princess {
+    background-position-x: -350;
+  }
+}
+
+.card {
+  background-image: url('https://ik.imagekit.io/v1yrj03ct/love-letter/cards.jpg');
+  background-size: cover;
+  background-position-x: -800px;
+  width: 100px;
+  margin: 10% auto;
+  border-radius: 8px;
+  box-shadow: 5px 5px 5px #656565;
+  &.guard {
+    background-position-x: 0;
+  }
+  &.priest {
+    background-position-x: -100;
+  }
+  &.baron {
+    background-position-x: -200;
+  }
+  &.handmaid {
+    background-position-x: -300;
+  }
+  &.prince {
+    background-position-x: -400;
+  }
+  &.king {
+    background-position-x: -500;
+  }
+  &.countess {
+    background-position-x: -600;
+  }
+  &.princess {
+    background-position-x: -700;
+  }
+}
+
+.p1 {
+  grid-area: p1;
+  .active-p1 & {
+    box-shadow: 0px 0px 10px 4px #fff;
+  }
+}
+
+.p2 {
+  grid-area: p2;
+  .active-p2 & {
+    box-shadow: 0px 0px 10px 4px #fff;
+  }
+}
+
+.p3 {
+  grid-area: p3;
+  .active-p3 & {
+    box-shadow: 0px 0px 10px 4px #fff;
+  }
+}
+
+.p4 {
+  grid-area: p4;
+  .active-p4 & {
+    box-shadow: 0px 0px 10px 4px #fff;
+  }
+}
+
+.shared { 
+  grid-area: shared;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+  section {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    height: 100%;
+  }
 }
