@@ -51,37 +51,54 @@ const draw = (initialDeck, initialHand) => {
 const initialState = {
   activePlayer: 'p1',
   aside: '',
+  topDiscard: '',
   'p1#hand': [],
   'p2#hand': [],
   'p3#hand': [],
   'p4#hand': [],
   'p1#state': {
     activePlayer: 'p1',
+    latest: '',
     hand: [],
     handSizes: [1, 1, 1, 1],
     names: [],
-    discards: []
+    'p1#discard': [],
+    'p2#discard': [],
+    'p3#discard': [],
+    'p4#discard': [],
   },
   'p2#state': {
     activePlayer: 'p1',
+    latest: '',
     hand: [],
     handSizes: [1, 1, 1, 1],
     names: [],
-    discards: []
+    'p1#discard': [],
+    'p2#discard': [],
+    'p3#discard': [],
+    'p4#discard': [],
   },
   'p3#state': {
     activePlayer: 'p1',
+    latest: '',
     hand: [],
     handSizes: [1, 1, 1, 1],
     names: [],
-    discards: []
+    'p1#discard': [],
+    'p2#discard': [],
+    'p3#discard': [],
+    'p4#discard': [],
   },
   'p4#state': {
     activePlayer: 'p1',
+    latest: '',
     hand: [],
     handSizes: [1, 1, 1, 1],
     names: [],
-    discards: []
+    'p1#discard': [],
+    'p2#discard': [],
+    'p3#discard': [],
+    'p4#discard': [],
   },
   'p1#discard': [],
   'p2#discard': [],
@@ -116,9 +133,6 @@ const getNextPlayer = (currentPlayer, playerOrder, deadPlayers) => {
 
 
 const playbook = {
-  'NEW_GAME': () => {
-    return createNewGameState()
-  },
   'PLAY_CARD': (state, action) => {
     const { cardPosition, target, guess } = action.payload
     const { userId } = action.meta
@@ -129,14 +143,16 @@ const playbook = {
     if (card === 'handmaid') {
       return playbook.NEW_TURN({
         ...state,
+        topDiscard: card,
         [discardKey]: [...state[discardKey], card],
         [handKey]: state[handKey].filter((_, i) => i !== cardPosition),
-        [`${player}#prot`]: true,
+        [`${player}#prot`]: true
       })
     }
     if (card === 'countess') {
       return playbook.NEW_TURN({
         ...state,
+        topDiscard: card,
         [discardKey]: [...state[discardKey], card],
         [handKey]: state[handKey].filter((_, i) => i !== cardPosition),
       })
@@ -145,6 +161,7 @@ const playbook = {
       const targetHandKey = `${target}#hand`;
       return playbook.NEW_TURN({
         ...state,
+        topDiscard: card,
         [discardKey]: [...state[discardKey], card],
         [handKey]: state[targetHandKey].slice(),
         [targetHandKey]: state[handKey].filter((_, i) => i !== cardPosition),
@@ -157,6 +174,7 @@ const playbook = {
       const { deck, hand } = draw(state.deck, [])
       return playbook.NEW_TURN({
         ...state,
+        topDiscard: card,
         ...(
           state[targetHandKey][0] === 'princess'
             ? { deadPlayers: { ...state.deadPlayers, [target]: true } }
@@ -176,6 +194,7 @@ const playbook = {
       const targetHandKey = `${target}#hand`;
       return playbook.NEW_TURN({
         ...state,
+        topDiscard: card,
         [discardKey]: [...state[discardKey], card],
         [handKey]: state[handKey].filter((_, i) => i !== cardPosition),
         [`${player}#intel`]: state[targetHandKey].slice()
@@ -191,6 +210,7 @@ const playbook = {
       if (targetVal > playerVal) outcome = 'loss'
       return playbook.NEW_TURN({
         ...state,
+        topDiscard: card,
         ...(
           outcome === 'win'
             ? { deadPlayers: { ...state.deadPlayers, [target]: true } }
@@ -209,6 +229,7 @@ const playbook = {
       const targetHandKey = `${target}#hand`;
       return playbook.NEW_TURN({
         ...state,
+        topDiscard: card,
         ...(
           state[targetHandKey][0] === guess
             ? { deadPlayers: { ...state.deadPlayers, [target]: true } }
@@ -244,30 +265,46 @@ const playbook = {
       'p4#hand': state.activePlayer === 'p4' ? activePlayerHand : hands[3],
       'p1#state': {
         activePlayer: state.activePlayer,
+        latest: '',
         hand: state.activePlayer === 'p1' ? activePlayerHand : hands[0],
         handSizes,
-        discards: [],
+        'p1#discard': [],
+        'p2#discard': [],
+        'p3#discard': [],
+        'p4#discard': [],
         names
       },
       'p2#state': {
         activePlayer: state.activePlayer,
+        latest: '',
         hand: state.activePlayer === 'p2' ? activePlayerHand : hands[1],
         handSizes,
-        discards: [],
+        'p1#discard': [],
+        'p2#discard': [],
+        'p3#discard': [],
+        'p4#discard': [],
         names
       },
       'p3#state': {
         activePlayer: state.activePlayer,
+        latest: '',
         hand: state.activePlayer === 'p3' ? activePlayerHand : hands[2],
         handSizes,
-        discards: [],
+        'p1#discard': [],
+        'p2#discard': [],
+        'p3#discard': [],
+        'p4#discard': [],
         names
       },
       'p4#state': {
         activePlayer: state.activePlayer,
+        latest: '',
         hand: state.activePlayer === 'p4' ? activePlayerHand : hands[3],
         handSizes,
-        discards: [],
+        'p1#discard': [],
+        'p2#discard': [],
+        'p3#discard': [],
+        'p4#discard': [],
         names
       },
       'p1#discard': [],
@@ -288,17 +325,33 @@ const playbook = {
     if (state.deck.length === 0) {
       // reveal + calc
     }
-    const nextRoundState = {
-      ...state,
-    }
     const activePlayer = getNextPlayer(state.activePlayer, state.playerOrder, state.deadPlayers)
     const activePlayerHandKey = `${activePlayer}#hand`
     const { deck, hand } = draw(state.deck, state[activePlayerHandKey])
     if (deck.length === 0) {
       // reveal + calc
     }
+    const playerStates = {}
+    state.playerOrder.forEach(p => {
+      const key = `${p}#state`
+      playerStates[key] = {
+        ...state[key],
+        handSizes: [
+          state['p1#hand'].length,
+          state['p2#hand'].length,
+          state['p3#hand'].length,
+          state['p4#hand'].length,
+        ],
+        latest: state.topDiscard,
+        'p1#discard': state['p1#discard'].slice(),
+        'p2#discard': state['p2#discard'].slice(),
+        'p3#discard': state['p3#discard'].slice(),
+        'p4#discard': state['p4#discard'].slice(),
+      }
+    })
     return {
       ...state,
+      ...playerStates,
       activePlayer,
       [activePlayerHandKey]: hand,
       [`${activePlayer}#prot`]: false,
@@ -312,7 +365,7 @@ const playbook = {
       const nextState = {
         ...state,
         playerIds: {
-          ...state.playersById,
+          ...state.playerIds,
           [unoccupiedSeat[0]]: userId
         },
         playersById: {
@@ -324,11 +377,23 @@ const playbook = {
           [userId]: name
         }
       }
+      const names = nextState.playerOrder.map((p) => nextState.playerNamesById[nextState.playerIds[p]])
+      const playerStates = {}
+      state.playerOrder.forEach(p => {
+        const key = `${p}#state`
+        playerStates[key] = {
+          ...nextState[key],
+          names
+        }
+      })
 
       if (!Object.entries(nextState.playerIds).find(pair => pair[1] === '')) {
         return playbook.NEW_ROUND(nextState)
       }
-      return nextState
+      return {
+        ...nextState,
+        ...playerStates
+      }
     }
     return state
   },
@@ -342,11 +407,21 @@ const playbook = {
       delete playersById[userId]
       delete playerNamesById[userId]
       playerIds[occupiedSeat[0]] = ''
+      const names = state.playerOrder.map((p) => playerNamesById[playerIds[p]])
+      const playerStates = {}
+      state.playerOrder.forEach(p => {
+        const key = `${p}#state`
+        playerStates[key] = {
+          ...state[key],
+          names
+        }
+      })
       return {
         ...state,
         playerIds,
         playerNamesById,
-        playerNamesById
+        playerNamesById,
+        ...playerStates
       }
     }
     return state

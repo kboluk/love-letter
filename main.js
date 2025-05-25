@@ -91,7 +91,7 @@ wss.on('connection', function (ws, request) {
   ws.on('close', function () {
     map.delete(userId);
     clearInterval(updates)
-    console.log(`cleared interal for ${userId}`)
+    console.log(`cleared interval for ${userId}`)
     store.dispatch({ type: 'REMOVE_PLAYER', payload: { userId } })
   });
 });
