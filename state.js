@@ -352,11 +352,12 @@ const playbook = {
       const key = `${p}#state`
       playerStates[key] = {
         ...state[key],
+        activePlayer,
         handSizes: [
-          state['p1#hand'].length,
-          state['p2#hand'].length,
-          state['p3#hand'].length,
-          state['p4#hand'].length,
+          activePlayer === 'p1' ? hand.length : state['p1#hand'].length,
+          activePlayer === 'p2' ? hand.length : state['p2#hand'].length,
+          activePlayer === 'p3' ? hand.length : state['p3#hand'].length,
+          activePlayer === 'p4' ? hand.length : state['p4#hand'].length,
         ],
         latest: state.topDiscard,
         'p1#discard': state['p1#discard'].slice(),
