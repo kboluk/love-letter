@@ -15,7 +15,7 @@ function LoveLetter() {
         socket.current = new WebSocket(`ws${window.location.protocol === 'https:' ? 's' : ''}://${window.location.host}`);
         socket.current.addEventListener("message", (event) => {
           const newState = JSON.parse(event.data)
-          if (!(state.activePlayer === state.position && activePlayer !== state.activePlayer)) {
+          if (!(state.activePlayer === state.position && state.activePlayer !== newState.activePlayer)) {
             setState(newState)
           }
         });
