@@ -1,5 +1,6 @@
-import { useState, useRef } from 'preact/hooks';
 import { render } from 'preact';
+import { useState, useRef } from 'preact/hooks';
+import GameBoard from './GameBoard'
 
 function LoveLetter() {
   const [state, setState] = useState(null)
@@ -13,14 +14,20 @@ function LoveLetter() {
       .then(() => {
         socket.current = new WebSocket(`ws${window.location.protocol === 'https:' ? 's' : ''}://${window.location.host}`);
         socket.current.addEventListener("message", (event) => {
-          setState(JSON.parse(event.data))
+          const newState = JSON.parse(event.data)
+          if (!(state.activePlayer === state.position && activePlayer !== state.activePlayer)) {
+            setState(newState)
+          }
         });
       })
   };
+  const play = (cardPosition, target, guess) => {
+    socket.current.send(JSON.stringify({ type: 'PLAY_CARD', payload: { cardPosition, target, guess } }))
+  }
 
   if (state) {
     if (state.names.every(i => i)) {
-      return <div>game board</div>
+      return <GameBoard {...state} play={play} />
     }
     return (
       <>
@@ -32,11 +39,15 @@ function LoveLetter() {
     )
   }
   return (
-    <form onSubmit={onSubmit}>
-      <input type="text" name="name" placeholder="your name" />
-      <button type="submit">Join</button>
-    </form>
+    <>
+      <form onSubmit={onSubmit}>
+        <input type="text" name="name" placeholder="your name" />
+        <button type="submit">Join</button>
+      </form>
+    </>
   );
 }
 
-render(<LoveLetter />, document.body);
+const App = <LoveLetter />
+
+render(App, document.body);

@@ -16,6 +16,7 @@ h3 {
 .board {
   max-width: 921px;
   height: 800px;
+  position: relative;
   margin: 0 auto;
   display: grid;
   justify-content: space-around;
@@ -30,6 +31,20 @@ h3 {
   
 }
 
+.guess-form {
+  display: none;
+  position: absolute;
+  background-color: rgba(255, 255, 255, 0.5);
+  right: 8em;
+  top: 3em;
+  &.show {
+    display: block;
+  }
+  label {
+    display: block;
+  }
+}
+
 .hand {
   list-style-type: none;
   padding: 0;
@@ -39,6 +54,9 @@ h3 {
   li {
     display: grid;
   }
+}
+.playable {
+  cursor: pointer;      
 }
 
 .discard {
