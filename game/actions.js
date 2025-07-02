@@ -1,4 +1,4 @@
-const { discardCard } = require('./util.js')
+const { discardCard, canPlayCard } = require('./util.js')
 const cardEffects = require('./cardEffects.js')
 
 function generateFullDeck (state) {
@@ -257,10 +257,9 @@ function updateLegalMovesForCurrentPlayer (state) {
   const currentPlayerId = state.currentPlayerId
   const player = state.players[currentPlayerId]
 
-  const legalMoves = player.hand.map(card => ({
-    type: 'play_card',
-    card
-  }))
+  const legalMoves = player.hand
+    .filter(c => canPlayCard(state, player, state.cards[c.name]))
+    .map(card => ({ type: 'play_card', card }))
 
   return {
     ...state,

@@ -34,14 +34,20 @@
       "count": 2,
       "value": 5,
       "description": "Target player discards hand and draws new card.",
-      "hook": "effect_prince"
+      "hook": "effect_prince",
+      "playConditions": [
+        { "when": "holding", "test": "Countess", "allow": false }
+      ]
     },
     "King": {
       "name": "King",
       "count": 1,
       "value": 6,
       "description": "Swap hands with another player.",
-      "hook": "effect_king"
+      "hook": "effect_king",
+      "playConditions": [
+        { "when": "holding", "test": "Countess", "allow": false }
+      ]
     },
     "Countess": {
       "name": "Countess",

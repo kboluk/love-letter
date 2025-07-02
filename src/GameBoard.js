@@ -42,13 +42,17 @@ export default function GameBoard ({ play, position, gameState, tableState }) {
     const p = players[seat]
     const playing = position === seat
     return playing
-      ? p.hand.map((c, i) =>
-        <li
-          key={i} className='playable'
-          onClick={() => setActive(c)}
-        >
-          <div className={`card ${c.name} ${active?.name === c.name && 'active'}`} />
-        </li>)
+      ? p.hand.map((c, i) => {
+        const legalMove = p.legalMoves.some(move => move.card.name === c.name)
+        return (
+          <li
+            key={i} className={`${legalMove ? 'playable' : ''}`}
+            onClick={() => legalMove ? setActive(c) : alert('no legal moves for that one')}
+          >
+            <div className={`card ${c.name} ${active?.name === c.name && 'active'}`} />
+          </li>
+        )
+      })
       : Array.from({ length: p.handSize }).map((_, i) =>
         <li key={i}><div className='card' /></li>)
   }
