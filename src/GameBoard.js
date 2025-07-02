@@ -1,151 +1,123 @@
-import { useState, useEffect } from 'preact/hooks';
+/* GameBoard.jsx – 90 lines instead of ~230 */
+import { useState, useMemo, useEffect, useCallback } from 'preact/hooks'
 
-const guessTypes = [
-  'princess',
-  'countess',
-  'king',
-  'prince',
-  'handmaid',
-  'baron',
-  'priest',
-];
+const GUESS_OPTIONS = [
+  'Princess', 'Countess', 'King', 'Prince', 'Handmaid', 'Baron', 'Priest'
+]
 
-function GameBoard(props) {
-  const {
-    activePlayer,
-    latest,
-    deckSize,
-    hand,
-    handSizes,
-    names,
-    position,
-    play
-  } = props;
-  const [target, setTarget] = useState(null)
-  const [activeCard, setActiveCard] = useState(null)
-  const [guess, setGuess] = useState(null)
-  const [p1Name, p2Name, p3Name, p4Name] = names
-  const [p1Hand, p2Hand, p3Hand, p4Hand] = handSizes
+export default function GameBoard ({ play, position, gameState, tableState }) {
+  /* ---------- derived helpers ---------- */
+  const seats = ['player1', 'player2', 'player3', 'player4']
+  const players = gameState.players
 
+  /* ---------- local UI state ----------- */
+  const [active, setActive] = useState(null) // card object
+  const [target, setTarget] = useState(null) // seat string
+  const [guess, setGuess] = useState(null) // guard guess
+
+  /* ---------- card‑effect requirements -- */
+  const needsTarget = useMemo(() =>
+    active && ['Priest', 'Baron', 'Prince', 'King', 'Guard'].includes(active.name) &&
+    !target, [active, target])
+
+  const needsGuess = useMemo(() =>
+    active?.name === 'Guard' && !guess, [active, guess])
+
+  /* ---------- auto‑fire move when ready -- */
   useEffect(() => {
-    if (typeof activeCard === 'number' && typeof target === 'string') {
-      if (hand[activeCard] !== 'guard') {
-        play(activeCard, target)
-        setTarget(null)
-        setActiveCard(null)
-        return
-      }
-      if (guess) {
-        play(activeCard, target, guess)
-        setTarget(null)
-        setActiveCard(null)
-        setGuess(null)
-      }
-    }
-  }, [target, activeCard, guess])
+    if (!active) return
+    if (needsTarget || needsGuess) return // still waiting for input
 
-  const chooseTarget = (targetPos) => {
-    if (typeof activeCard === 'number') {
-      setTarget(targetPos)
-    }
+    play(active.name, target, guess) // send to server
+    setActive(null); setTarget(null); setGuess(null)
+  }, [active, needsTarget, needsGuess]) // eslint‑disable‑line
+
+  /* ---------- helpers ------------------- */
+  const chooseSeat = useCallback(seat => {
+    const p = players[seat]
+    if (needsTarget && !p.eliminated && !p.protected) setTarget(seat)
+  }, [needsTarget, players])
+
+  const renderHand = seat => {
+    const p = players[seat]
+    const playing = position === seat
+    return playing
+      ? p.hand.map((c, i) =>
+        <li
+          key={i} className='playable'
+          onClick={() => setActive(c)}
+        >
+          <div className={`card ${c.name} ${active?.name === c.name && 'active'}`} />
+        </li>)
+      : Array.from({ length: p.handSize }).map((_, i) =>
+        <li key={i}><div className='card' /></li>)
   }
 
-  const guessSubmit = (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const guardGuess = formData.get('guardGuess')
-    setGuess(guardGuess)
-  }
-  const showGuessForm = typeof activeCard === 'number' && typeof target === 'string' && hand[activeCard] === 'guard'
-  const playable = activePlayer === position
+  /* ---------- JSX ----------------------- */
   return (
-    <section>
-      <div className={`board active-${activePlayer}`}>
-        <form onSubmit={guessSubmit} className={`guess-form ${showGuessForm ? 'show' : ''}`}>
-          Guard Guess
-          {guessTypes.map(type => <label><input type='radio' name='guardGuess' value={type} /> {type}</label>)}
-          <button type='submit'>Guess</button>
+    <section className='game-container'>
+      {/* guess form ------------------------------------------------ */}
+      {needsGuess && target && (
+        <form
+          className='guess-form' onSubmit={e => {
+            e.preventDefault()
+            setGuess(new FormData(e.currentTarget).get('guardGuess'))
+          }}
+        >
+          Guard Guess&nbsp;
+          {GUESS_OPTIONS.map(opt => (
+            <label key={opt}><input type='radio' name='guardGuess' value={opt} /> {opt}</label>
+          ))}
+          <button>Guess</button>
         </form>
-        <div className="p1 panel">
-          <h3 onClick={() => chooseTarget('p1')}>{p1Name}</h3>
-          <ol className="hand">
-            {
-              playable && position === 'p1'
-                ? hand.map((c, idx) =>
-                  <li className="playable" onClick={() => setActiveCard(idx)}>
-                    <div className={`card ${c} ${activeCard === idx && 'active'}`}></div>
-                  </li>)
-                : Array.from({ length: p1Hand }, (_, idx) => idx)
-                  .map(() => <li><div className="card"></div></li>)
-            }
-          </ol>
-          <ol className="discard">
-            {
-              props['p1#discard'].map(c => <li><div className={`val ${c}`}></div></li>)
-            }
-          </ol>
-        </div>
-        <div className="p2 panel">
-          <h3 onClick={() => chooseTarget('p2')}>{p2Name}</h3>
-          <ol className="hand">
-            {
-              playable && position === 'p2'
-                ? hand.map((c, idx) => <li className="playable" onClick={() => play(idx)}><div className={`card ${c}`}></div></li>)
-                : Array.from({ length: p2Hand }, (_, idx) => idx)
-                  .map(() => <li><div className="card"></div></li>)
-            }
-          </ol>
-          <ol className="discard">
-            {
-              props['p2#discard'].map(c => <li><div className={`val ${c}`}></div></li>)
-            }
-          </ol>
-        </div>
-        <div className="shared panel">
+      )}
+      <div className={`board active-${gameState.currentPlayerId}${needsTarget ? ' targeting' : ''}`}>
+
+        {/* player panels -------------------------------------------- */}
+        {seats.map(seat => {
+          const p = players[seat]
+          const { username = '???' } = tableState[seat] || {}
+          return (
+            <div key={seat} className={`${seat} panel${target === seat ? ' target' : ''}`}>
+              <h3 className='player-name' onClick={() => chooseSeat(seat)}>{p.eliminated && '💀'} {username} {p.protected && '🛡️'}</h3>
+
+              <ol className='hand'>{renderHand(seat)}</ol>
+
+              <ol className='discard'>
+                {p.discardPile.map((c, i) =>
+                  <li key={i}><div className={`val ${c.name}`} /></li>)}
+              </ol>
+            </div>
+          )
+        })}
+
+        {/* centre stack --------------------------------------------- */}
+        <div className='shared panel'>
           <section>
-            <h3>Last Played</h3>
-            <div className={`card ${latest}`}></div>
+            <h3>Deck (x{gameState.deckSize})</h3>
+            <div className='card' />
           </section>
-          <section>
-            <h3>Deck (x{deckSize})</h3>
-            <div className="card"></div>
-          </section>
-        </div>
-        <div className="p3 panel">
-          <h3 onClick={() => chooseTarget('p3')}>{p3Name}</h3>
-          <ol className="hand">
-            {
-              playable && position === 'p3'
-                ? hand.map((c, idx) => <li className="playable" onClick={() => play(idx)}><div className={`card ${c}`}></div></li>)
-                : Array.from({ length: p3Hand }, (_, idx) => idx)
-                  .map(() => <li><div className="card"></div></li>)
-            }
-          </ol>
-          <ol className="discard">
-            {
-              props['p3#discard'].map(c => <li><div className={`val ${c}`}></div></li>)
-            }
-          </ol>
-        </div>
-        <div className="p4 panel">
-          <h3 onClick={() => chooseTarget('p4')}>{p4Name}</h3>
-          <ol className="hand">
-            {
-              playable && position === 'p4'
-                ? hand.map((c, idx) => <li className="playable" onClick={() => play(idx)}><div className={`card ${c}`}></div></li>)
-                : Array.from({ length: p4Hand }, (_, idx) => idx)
-                  .map(() => <li><div className="card"></div></li>)
-            }
-          </ol>
-          <ol className="discard">
-            {
-              props['p4#discard'].map(c => <li><div className={`val ${c}`}></div></li>)
-            }
-          </ol>
         </div>
       </div>
-    </section>
-  );
-}
 
-export default GameBoard
+      <section className='meta'>
+        <div className='scores'>
+          <h3>Scores:</h3>
+          <ul>
+            {seats.map(seat => <li key={seat}>{tableState[seat]?.username || '???'}: {gameState.players[seat].score}</li>)}
+          </ul>
+        </div>
+        <div className='logs'>
+          <h3>Logs:</h3>
+          <ol>
+            {players[position].logs.map((log, idx) =>
+              <li key={`${log}_${idx}`}>
+                {seats.reduce((acc, seat) => acc.replace(seat, tableState[seat].username), log)}
+              </li>
+            )}
+          </ol>
+        </div>
+      </section>
+    </section>
+  )
+}

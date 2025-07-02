@@ -4,6 +4,33 @@ body {
 
 h3 {
   text-align: center;
+  margin: .5em 0;
+  .target &.player-name {
+    box-shadow: 0px 0px 10px 4px fuchsia;
+  }
+  .targeting &.player-name {
+    box-shadow: 0px 0px 10px 4px cyan;
+  }
+}
+
+.game-container {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  position: relative;
+}
+
+.meta {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  padding: 1em;
+}
+
+.logs {
+  ol {
+    list-style-type: disc;
+    display: flex;
+    flex-direction: column-reverse;
+  }
 }
 
 .panel {
@@ -14,32 +41,29 @@ h3 {
 }
 
 .board {
-  max-width: 921px;
+  width: 921px;
   height: 800px;
   position: relative;
   margin: 0 auto;
   display: grid;
-  justify-content: space-around;
-  align-content: space-around;
+  place-content: space-evenly;
   grid-template-columns: 25% 25% 25%;
   grid-template-rows: 25% 25% 25%;
   grid-template-areas:
     ". p2 ."
     "p1 shared p3"
     ". p4 .";
-  background-image: url('https://ik.imagekit.io/v1yrj03ct/love-letter/background.jpg')
-  
+  background-image: url('https://ik.imagekit.io/v1yrj03ct/love-letter/background.jpg');
+  &.targeting {
+    cursor: pointer;
+  }
 }
 
 .guess-form {
-  display: none;
   position: absolute;
-  background-color: rgba(255, 255, 255, 0.5);
-  right: 8em;
   top: 3em;
-  &.show {
-    display: block;
-  }
+  right: 8em;
+  background-color: rgba(255, 255, 255, 0.5);
   label {
     display: block;
   }
@@ -78,25 +102,25 @@ h3 {
 .val {
   background-image: url('https://ik.imagekit.io/v1yrj03ct/love-letter/cardnumbers.png');
   background-size: cover;
-  &.priest {
+  &.Priest {
     background-position-x: -50;
   }
-  &.baron {
+  &.Baron {
     background-position-x: -100;
   }
-  &.handmaid {
+  &.Handmaid {
     background-position-x: -150;
   }
-  &.prince {
+  &.Prince {
     background-position-x: -200;
   }
-  &.king {
+  &.King {
     background-position-x: -250;
   }
-  &.countess {
+  &.Countess {
     background-position-x: -300;
   }
-  &.princess {
+  &.Princess {
     background-position-x: -350;
   }
 }
@@ -109,56 +133,56 @@ h3 {
   margin: 10% auto;
   border-radius: 8px;
   box-shadow: 5px 5px 5px #656565;
-  &.guard {
+  &.Guard {
     background-position-x: 0;
   }
-  &.priest {
+  &.Priest {
     background-position-x: -100;
   }
-  &.baron {
+  &.Baron {
     background-position-x: -200;
   }
-  &.handmaid {
+  &.Handmaid {
     background-position-x: -300;
   }
-  &.prince {
+  &.Prince {
     background-position-x: -400;
   }
-  &.king {
+  &.King {
     background-position-x: -500;
   }
-  &.countess {
+  &.Countess {
     background-position-x: -600;
   }
-  &.princess {
+  &.Princess {
     background-position-x: -700;
   }
 }
 
-.p1 {
+.player1 {
   grid-area: p1;
-  .active-p1 & {
+  .active-player1 & {
     box-shadow: 0px 0px 10px 4px #fff;
   }
 }
 
-.p2 {
+.player2 {
   grid-area: p2;
-  .active-p2 & {
+  .active-player2 & {
     box-shadow: 0px 0px 10px 4px #fff;
   }
 }
 
-.p3 {
+.player3 {
   grid-area: p3;
-  .active-p3 & {
+  .active-player3 & {
     box-shadow: 0px 0px 10px 4px #fff;
   }
 }
 
-.p4 {
+.player4 {
   grid-area: p4;
-  .active-p4 & {
+  .active-player4 & {
     box-shadow: 0px 0px 10px 4px #fff;
   }
 }

@@ -1,58 +1,97 @@
-import { render } from 'preact';
-import { useState, useRef } from 'preact/hooks';
+import { render } from 'preact'
+import { useState, useRef, useEffect } from 'preact/hooks'
 import GameBoard from './GameBoard'
 
-function LoveLetter() {
-  const [state, setState] = useState(null)
-  const socket = useRef(null)
-  const onSubmit = (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const name = formData.get('name')
-    fetch('/login', { method: 'POST', body: JSON.stringify({ name }), headers: { 'content-type': 'application/json' } })
-      .then(i => i.json())
-      .then(() => {
-        socket.current = new WebSocket(`ws${window.location.protocol === 'https:' ? 's' : ''}://${window.location.host}`);
-        socket.current.addEventListener("message", (event) => {
-          const newState = JSON.parse(event.data)
-          if (state) {
-            if (state.activePlayer === state.position) {
-              if (state.activePlayer !== newState.activePlayer) {
-                return
-              }
-            }
-          }
-          setState(newState)
-        });
+/* --------------------------- component --------------------------- */
+function LoveLetter () {
+  const [userState, setUserState] = useState(null)
+  const [tableState, setTableState] = useState(null)
+  const [gameState, setGameState] = useState(null)
+  const [position, setPosition] = useState(null)
+
+  const esRef = useRef(null)
+
+  /* ---------- open (and always cleanup) SSE connection ----------- */
+  useEffect(() => {
+    const es = new EventSource('/game') // same‑origin ⇒ cookies auto
+    esRef.current = es
+
+    es.onmessage = e => {
+      const msg = JSON.parse(e.data)
+      console.log(msg)
+      switch (msg.type) {
+        case 'TABLE_STATE': setTableState(msg.payload); break
+        case 'USER_STATE' : setUserState(msg.payload); break
+        case 'GAME_STATE' : setGameState(msg.payload); break
+        default: console.warn('unknown SSE', msg)
+      }
+    }
+
+    return () => es.close() // clean up on unmount
+  }, [])
+
+  /* ------------- derive my seat every time deps change ----------- */
+  useEffect(() => {
+    if (!userState || !tableState) return
+    const seat = Object.keys(tableState)
+      .find(s => tableState[s]?.id === userState.id)
+    setPosition(seat ?? null)
+  }, [userState, tableState])
+
+  /* ------------------- helper: play a card ----------------------- */
+  async function play (cardName, targetSeat = null, guess = null) {
+    try {
+      await fetch('/move', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cardName, targetSeat, guess })
       })
-  };
-  const play = (cardPosition, target, guess) => {
-    socket.current.send(JSON.stringify({ type: 'PLAY_CARD', payload: { cardPosition, target, guess } }))
+    } catch (e) {
+      console.error('move failed', e)
+      alert('move failed: ' + e.message)
+    }
   }
 
-  if (state) {
-    if (state.names.every(i => i)) {
-      return <GameBoard {...state} play={play} />
+  /* ------------------- helper: join the table -------------------- */
+  async function join () {
+    try {
+      await fetch('/join', { method: 'GET' }) // same‑origin, cookie sent
+    } catch (e) {
+      alert('join failed: ' + e.message)
     }
+  }
+
+  /* --------------------------- render ---------------------------- */
+  if (gameState) {
+    return (
+      <GameBoard
+        gameState={gameState}
+        tableState={tableState}
+        position={position}
+        play={play}
+      />
+    )
+  }
+
+  if (tableState) {
     return (
       <>
-        <h2>waiting on other players</h2>
+        <h2>Waiting room</h2>
         <ol>
-          {state.names.map((name, idx) => <li>p{idx + 1}: {name || '???'}</li>)}
+          {Object.keys(tableState).map(seat => (
+            <li key={seat}>
+              {seat}: {tableState[seat]?.username ?? ' — empty —'}
+            </li>
+          ))}
         </ol>
+        <button onClick={join} disabled={!!position}>
+          {position ? 'SEATED' : 'JOIN'}
+        </button>
       </>
     )
   }
-  return (
-    <>
-      <form onSubmit={onSubmit}>
-        <input type="text" name="name" placeholder="your name" />
-        <button type="submit">Join</button>
-      </form>
-    </>
-  );
+
+  return <>loading…</>
 }
 
-const App = <LoveLetter />
-
-render(App, document.body);
+render(<LoveLetter />, document.body)

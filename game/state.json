@@ -1,0 +1,172 @@
+{
+  "currentPlayerId": "player1",
+  "cards": {
+    "Guard": {
+      "name": "Guard",
+      "count": 5,
+      "value": 1,
+      "description": "Guess a non-Guard card. If correct, that player is eliminated.",
+      "hook": "effect_guard"
+    },
+    "Priest": {
+      "name": "Priest",
+      "count": 2,
+      "value": 2,
+      "description": "Look at another player's hand.",
+      "hook": "effect_priest"
+    },
+    "Baron": {
+      "name": "Baron",
+      "count": 2,
+      "value": 3,
+      "description": "Compare hands; lower hand eliminated.",
+      "hook": "effect_baron"
+    },
+    "Handmaid": {
+      "name": "Handmaid",
+      "count": 2,
+      "value": 4,
+      "description": "Protection until your next turn.",
+      "hook": "effect_handmaid"
+    },
+    "Prince": {
+      "name": "Prince",
+      "count": 2,
+      "value": 5,
+      "description": "Target player discards hand and draws new card.",
+      "hook": "effect_prince"
+    },
+    "King": {
+      "name": "King",
+      "count": 1,
+      "value": 6,
+      "description": "Swap hands with another player.",
+      "hook": "effect_king"
+    },
+    "Countess": {
+      "name": "Countess",
+      "count": 1,
+      "value": 7,
+      "description": "Must be played if caught with King or Prince.",
+      "hook": "effect_countess"
+    },
+    "Princess": {
+      "name": "Princess",
+      "count": 1,
+      "value": 8,
+      "description": "If you discard, you are eliminated.",
+      "hook": "effect_princess"
+    }
+  },
+  "deckState": {
+    "deck": [],
+    "setAsideCard": null
+  },
+  "players": {
+    "player1": {
+      "eliminated": false,
+      "protected": false,
+      "hand": [],
+      "discardPile": [],
+      "revealedInfo": {},
+      "knownCards": {},
+      "guesses": [],
+      "score": 0,
+      "logs": [],
+      "legalMoves": []
+    },
+    "player2": {
+      "eliminated": false,
+      "protected": false,
+      "hand": [],
+      "discardPile": [],
+      "revealedInfo": {},
+      "knownCards": {},
+      "guesses": [],
+      "score": 0,
+      "logs": [],
+      "legalMoves": []
+    },
+    "player3": {
+      "eliminated": false,
+      "protected": false,
+      "hand": [],
+      "discardPile": [],
+      "revealedInfo": {},
+      "knownCards": {},
+      "guesses": [],
+      "score": 0,
+      "logs": [],
+      "legalMoves": []
+    },
+    "player4": {
+      "eliminated": false,
+      "protected": false,
+      "hand": [],
+      "discardPile": [],
+      "revealedInfo": {},
+      "knownCards": {},
+      "guesses": [],
+      "score": 0,
+      "logs": [],
+      "legalMoves": []
+    }
+  },
+  "game": {
+    "id": "loveLetterGame",
+    "initial": "setup",
+    "states": {
+      "setup": {
+        "onEntry": ["generateFullDeck", "shuffleDeck", "setAsideTopCard"],
+        "on": {
+          "START_GAME": "deal_cards"
+        },
+        "always": [
+          { "target": "deal_cards", "cond": "isSubRound" }
+        ]
+      },
+      "deal_cards": {
+        "onEntry": ["dealOneCardToEachPlayer"],
+        "always": [
+          { "target": "draw_card" }
+        ]
+      },
+      "draw_card": {
+        "onEntry": ["clearProtectionForCurrentPlayer", "drawCardForCurrentPlayer", "updateLegalMovesForCurrentPlayer"],
+        "always": [
+          { "target": "play_card" }
+        ]
+      },
+      "play_card": {
+        "onEntry": ["updateLegalMovesForCurrentPlayer"],
+        "on": {
+          "CARD_PLAYED": "resolve_effect",
+          "PASS_TURN": "draw_card"
+        }
+      },
+      "resolve_effect": {
+        "onEntry": ["applyCardEffect", "advanceCurrentPlayer"],
+        "always": [
+          { "target": "check_end_condition" }
+        ]
+      },
+      "check_end_condition": {
+        "onEntry": ["evaluateRoundEnd"],
+        "always": [
+          { "target": "end_round", "cond": "isRoundOver"},
+          { "target": "draw_card" }
+        ]
+      },
+      "end_round": {
+        "onEntry": ["tallyScores", "resetForNextRound"],
+        "always": [
+          { "target": "game_over", "cond": "isGameOver"},
+          { "target": "setup" }
+        ]
+      },
+      "game_over": {
+        "type": "final"
+      }
+    }
+  }
+}

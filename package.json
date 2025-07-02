@@ -9,6 +9,9 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "@clerk/express": "1.7.2",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "17.0.0",
     "express": "5.1.0",
     "express-session": "1.18.1",
     "lodash": "4.17.21",
@@ -18,9 +21,16 @@
     "ws": "8.18.2"
   },
   "devDependencies": {
-    "parcel": "2.15.1"
+    "parcel": "2.15.1",
+    "standard": "17.1.2"
   },
   "alias": {
-  "preact/jsx-dev-runtime": "preact/jsx-runtime"
-}
+    "preact/jsx-dev-runtime": "preact/jsx-runtime"
+  },
+  "standard": {
+    "globals": [
+      "EventSource",
+      "alert"
+    ]
+  }
 }
