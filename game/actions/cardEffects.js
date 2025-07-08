@@ -76,7 +76,7 @@ const cardEffects = {
     let withLog = logEntry(newState, `${playerId} plays a Prince against ${targetId}`)
     if (discardedCard.name === 'Princess') {
       withLog = logEntry(withLog, `Princess: ${targetId} discards a ${discardedCard.name} and is out of the round`)
-      return eliminatePlayer(newState, targetId)
+      return eliminatePlayer(withLog, targetId)
     }
     withLog = logEntry(withLog, `Prince: ${targetId} discards a ${discardedCard.name}`)
 
