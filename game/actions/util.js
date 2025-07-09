@@ -14,7 +14,8 @@ function discardCard (state, playerId, card) {
   }
 }
 
-function logEntry (state, log, playerId) {
+function logEntry (state, message, playerId) {
+  const entry = { ts: Date.now(), msg: message }
   if (playerId) {
     const player = state.players[playerId]
     return {
@@ -23,7 +24,7 @@ function logEntry (state, log, playerId) {
         ...state.players,
         [playerId]: {
           ...player,
-          logs: [...(player.logs ?? []), log]
+          logs: [...(player.logs ?? []), entry]
         }
       }
     }
@@ -33,7 +34,7 @@ function logEntry (state, log, playerId) {
       pid,
       {
         ...p,
-        logs: [...(p.logs ?? []), log]
+        logs: [...(p.logs ?? []), entry]
       }
     ])
   )

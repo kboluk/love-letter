@@ -1,4 +1,3 @@
-/* GameBoard.jsx – 90 lines instead of ~230 */
 import { useState, useMemo, useEffect, useCallback } from 'preact/hooks'
 
 const GUESS_OPTIONS = [
@@ -57,6 +56,8 @@ export default function GameBoard ({ play, position, gameState, tableState }) {
         <li key={i}><div className='card' /></li>)
   }
 
+  const displayedLogs = players[position].logs.slice(-20).map(({ ts, msg }) => `${new Date(ts).toLocaleTimeString()} | ${msg}`)
+
   /* ---------- JSX ----------------------- */
   return (
     <section className='game-container'>
@@ -114,10 +115,8 @@ export default function GameBoard ({ play, position, gameState, tableState }) {
         <div className='logs'>
           <h3>Logs:</h3>
           <ol>
-            {players[position].logs.map((log, idx) =>
-              <li key={`${log}_${idx}`}>
-                {seats.reduce((acc, seat) => acc.replace(seat, tableState[seat].username), log)}
-              </li>
+            {displayedLogs.map((log, idx) =>
+              <li key={`${log}_${idx}`}>{log}</li>
             )}
           </ol>
         </div>

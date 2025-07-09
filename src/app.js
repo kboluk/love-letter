@@ -10,6 +10,8 @@ function LoveLetter () {
   const [position, setPosition] = useState(null)
 
   const esRef = useRef(null)
+  const prevPlaying = useRef(false)
+  const playing = position === gameState?.currentPlayerId
 
   /* ---------- open (and always cleanup) SSE connection ----------- */
   useEffect(() => {
@@ -56,6 +58,18 @@ function LoveLetter () {
     setPosition(seat ?? null)
   }, [userState, tableState])
 
+  /* ---- side effects when my turn starts ----------------------- */
+
+  useEffect(() => {
+    if (playing && !prevPlaying.current) {
+      document.title = '▶ Your turn!'
+    }
+    if (!playing && prevPlaying.current) {
+      document.title = 'Love Letter'
+    }
+    prevPlaying.current = playing
+  }, [playing])
+
   /* ------------------- helper: play a card ----------------------- */
   async function play (cardName, targetSeat = null, guess = null) {
     try {
@@ -82,12 +96,15 @@ function LoveLetter () {
   /* --------------------------- render ---------------------------- */
   if (gameState) {
     return (
-      <GameBoard
-        gameState={gameState}
-        tableState={tableState}
-        position={position}
-        play={play}
-      />
+      <>
+        {playing && <div className='turn-banner'>Your turn!</div>}
+        <GameBoard
+          gameState={gameState}
+          tableState={tableState}
+          position={position}
+          play={play}
+        />
+      </>
     )
   }
 
