@@ -29,10 +29,28 @@ function mountLoginRoute (app) {
     if (!username || username.length < 3) {
       return res.status(400).json({ error: 'username too short' })
     }
-    // ensure uniqueness
-    if ([...USERS.values()].some(u => u.username === username)) {
+
+    const sidCookie = req.cookies?.sid
+    const current = sidCookie && USERS.get(sidCookie) // may be undefined
+    const takenBy = [...USERS.values()].find(u => u.username === username)
+
+    /* ---------- Case 1: already logged in with same name ---------- */
+    if (current && current.username === username) {
+      return res.sendStatus(200) // nothing to change
+    }
+
+    /* ---------- Case 2: name belongs to some *other* session ------ */
+    if (takenBy && (!current || takenBy.id !== current.id)) {
       return res.status(409).json({ error: 'username taken' })
     }
+
+    /* ---------- Case 3: update existing session name -------------- */
+    if (current) {
+      current.username = username // mutate in‑place
+      return res.sendStatus(200)
+    }
+
+    /* ---------- Case 4: fresh session ----------------------------- */
     const sid = createSession(username)
     res.cookie('sid', sid, { httpOnly: true, sameSite: 'lax' })
     res.sendStatus(200)
