@@ -13,21 +13,39 @@ function LoveLetter () {
 
   /* ---------- open (and always cleanup) SSE connection ----------- */
   useEffect(() => {
-    const es = new EventSource('/game') // same‑origin ⇒ cookies auto
-    esRef.current = es
+    async function ensureLogin () {
+      const hasCookie = document.cookie.includes('sid=')
+      if (hasCookie) return
 
-    es.onmessage = e => {
-      const msg = JSON.parse(e.data)
-      console.log(msg)
-      switch (msg.type) {
-        case 'TABLE_STATE': setTableState(msg.payload); break
-        case 'USER_STATE' : setUserState(msg.payload); break
-        case 'GAME_STATE' : setGameState(msg.payload); break
-        default: console.warn('unknown SSE', msg)
+      let username = prompt('Choose a user­name (min 3 chars)')
+      while (username && username.length < 3) {
+        username = prompt('Too short. Try again:')
       }
+      if (!username) return // user cancelled → stay idle
+
+      const resp = await fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username })
+      })
+      if (!resp.ok) alert('login failed: ' + (await resp.text()))
     }
 
-    return () => es.close() // clean up on unmount
+    ensureLogin().then(() => {
+      const es = new EventSource('/game') // same‑origin ⇒ cookies auto
+      esRef.current = es
+
+      es.onmessage = e => {
+        const msg = JSON.parse(e.data)
+        switch (msg.type) {
+          case 'TABLE_STATE': setTableState(msg.payload); break
+          case 'USER_STATE' : setUserState(msg.payload); break
+          case 'GAME_STATE' : setGameState(msg.payload); break
+          default: console.warn('unknown SSE', msg)
+        }
+      }
+    })
+    return () => esRef.current && esRef.current.close() // clean up on unmount
   }, [])
 
   /* ------------- derive my seat every time deps change ----------- */
@@ -80,7 +98,7 @@ function LoveLetter () {
         <ol>
           {Object.keys(tableState).map(seat => (
             <li key={seat}>
-              {seat}: {tableState[seat]?.username ?? ' — empty —'}
+              {seat}: {tableState[seat]?.username ?? ' — empty —'}
             </li>
           ))}
         </ol>

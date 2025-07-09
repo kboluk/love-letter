@@ -1,10 +1,9 @@
 const router = require('express').Router()
-const { USE_CLERK } = require('../config')
 
 const {
   getAuth, // (req) → { userId, ... }
   authGuard // express middleware
-} = USE_CLERK ? require('../auth/clerk') : require('../auth/devStub')
+} = require('../auth')
 
 const { tableStatus, getState, playCard } = require('../game/stateManager')
 const { broadcastGameState } = require('../game/sse')

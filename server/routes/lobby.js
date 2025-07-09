@@ -1,11 +1,10 @@
 const router = require('express').Router()
-const { USE_CLERK } = require('../config')
 
 const {
   getAuth, // (req) → { userId, ... }
   getUserProfile, // (uid) → Promise<{id,username,imageUrl}>
   authGuard // express middleware
-} = USE_CLERK ? require('../auth/clerk') : require('../auth/devStub')
+} = require('../auth')
 
 const { tableStatus, getState, gameVersion, streamsByUserId, startGame } = require('../game/stateManager')
 const { isUserSeated, findChair, vacateSeat } = require('../game/seating')
