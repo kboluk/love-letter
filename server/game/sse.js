@@ -1,4 +1,4 @@
-const { streamsByUserId, tableStatus, state, gameVersion } = require('./stateManager')
+const { streamsByUserId, tableStatus, getState, gameVersion } = require('./stateManager')
 const getViewForSeat = require('./view')
 
 const sse = event => `data: ${JSON.stringify(event)}\n\n`
@@ -15,7 +15,7 @@ const broadcastGameState = () => {
     for (const playerId in tableS) {
       if (tableS[playerId]?.id === userId) seat = playerId
     }
-    stream.write(sse({ type: 'GAME_STATE', ver: gameVersion(), payload: getViewForSeat(seat, state()) }))
+    stream.write(sse({ type: 'GAME_STATE', ver: gameVersion(), payload: getViewForSeat(seat, getState()) }))
   })
 }
 

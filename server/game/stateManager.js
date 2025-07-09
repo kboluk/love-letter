@@ -28,7 +28,7 @@ const clearSeat = playerId => { tableStatus[playerId] = null }
 
 module.exports = {
   tableStatus: () => tableStatus,
-  state: () => state,
+  getState: () => state,
   gameVersion: () => gameVersion,
   streamsByUserId,
   startGame,

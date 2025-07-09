@@ -7,7 +7,7 @@ const {
   authGuard // express middleware
 } = USE_CLERK ? require('../auth/clerk') : require('../auth/devStub')
 
-const { tableStatus, state, gameVersion, streamsByUserId, startGame } = require('../game/stateManager')
+const { tableStatus, getState, gameVersion, streamsByUserId, startGame } = require('../game/stateManager')
 const { isUserSeated, findChair, vacateSeat } = require('../game/seating')
 const { sse, broadcastTableStatus, broadcastGameState } = require('../game/sse')
 const getViewForSeat = require('../game/view')
@@ -29,7 +29,7 @@ router.get('/join', authGuard, async (req, res) => {
         startGame()
         broadcastGameState()
       } else {
-        streamsByUserId.get(userId).write(sse({ type: 'GAME_STATE', ver: gameVersion(), payload: getViewForSeat(emptySeat, state) }))
+        streamsByUserId.get(userId).write(sse({ type: 'GAME_STATE', ver: gameVersion(), payload: getViewForSeat(emptySeat, getState()) }))
       }
     }
   } else {
@@ -55,7 +55,7 @@ router.get('/game', authGuard, async (req, res) => {
   if (isUserSeated(userId)) {
     // send seat‑filtered view
     const seat = Object.entries(tableS).find(([, u]) => u?.id === userId)?.[0]
-    res.write(sse({ type: 'GAME_STATE', ver: gameVersion(), payload: getViewForSeat(seat, state()) }))
+    res.write(sse({ type: 'GAME_STATE', ver: gameVersion(), payload: getViewForSeat(seat, getState()) }))
   }
   const cleanup = () => {
     streamsByUserId.delete(userId)

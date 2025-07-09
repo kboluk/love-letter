@@ -6,7 +6,7 @@ const {
   authGuard // express middleware
 } = USE_CLERK ? require('../auth/clerk') : require('../auth/devStub')
 
-const { tableStatus, state, playCard } = require('../game/stateManager')
+const { tableStatus, getState, playCard } = require('../game/stateManager')
 const { broadcastGameState } = require('../game/sse')
 const { isUserSeated } = require('../game/seating')
 
@@ -18,7 +18,7 @@ router.post('/move', authGuard, (req, res) => {
   const playerSeat = Object.entries(tableStatus())
     .find(([_, u]) => u?.id === userId)?.[0]
 
-  if (playerSeat !== state().currentPlayerId) {
+  if (playerSeat !== getState().currentPlayerId) {
     return res.status(409).send('not your turn')
   }
 
