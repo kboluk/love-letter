@@ -1,61 +1,68 @@
+const { logEntry } = require('./util')
+
+/* ---------------------------- helpers --------------------------- */
 function determineHighestCardWinner (state) {
   let bestValue = -1
   let contenders = []
 
   for (const [pid, player] of Object.entries(state.players)) {
     if (!player.eliminated && player.hand.length > 0) {
-      const cardValue = player.hand[0].value
-      if (cardValue > bestValue) {
-        bestValue = cardValue
-        contenders = [pid]
-      } else if (cardValue === bestValue) {
-        contenders.push(pid)
-      }
+      const v = player.hand[0].value
+      if (v > bestValue) { bestValue = v; contenders = [pid] } else if (v === bestValue) { contenders.push(pid) }
     }
   }
 
-  if (contenders.length === 1) return contenders[0]
+  /* Single winner on highest card -------------------------------- */
+  if (contenders.length === 1) {
+    const card = state.players[contenders[0]].hand[0].name
+    return [contenders[0], `${contenders[0]} wins with the highest card (${card}).`]
+  }
 
-  // Apply tiebreaker: highest total value in discard pile
+  /* Tie‑breaker: highest discard total --------------------------- */
   let bestSum = -1
   let winnerId = null
 
   for (const pid of contenders) {
-    const player = state.players[pid]
-    const discardSum = player.discardPile.reduce((acc, c) => acc + c.value, 0)
-
-    if (discardSum > bestSum) {
-      bestSum = discardSum
-      winnerId = pid
-    } else if (discardSum === bestSum) {
-      winnerId = null // Still tied — absolute draw
-    }
+    const sum = state.players[pid].discardPile.reduce((s, c) => s + c.value, 0)
+    if (sum > bestSum) { bestSum = sum; winnerId = pid } else if (sum === bestSum) { winnerId = null } // absolute draw
   }
 
-  return winnerId
+  if (winnerId) {
+    return [
+      winnerId,
+      `${winnerId} wins by discard‑pile tie‑breaker (${bestSum} total).`
+    ]
+  }
+  return [null, 'Absolute tie after tie‑breaker.']
 }
 
+/* ------------------------- main reducer ------------------------- */
 function evaluateRoundEnd (state) {
-  const survivors = Object.entries(state.players)
-    .filter(([, p]) => !p.eliminated)
+  const survivors = Object.entries(state.players).filter(([, p]) => !p.eliminated)
 
   let roundStatus = 'CONTINUES'
   let winnerId = null
+  let nextState = state // start with current
 
+  /* --- last survivor ------------------------------------------- */
   if (survivors.length === 1) {
     roundStatus = 'ENDS'
     winnerId = survivors[0][0]
+    nextState = logEntry(state, `END OF ROUND — ${winnerId} wins as the last person standing.`)
   } else if (state.deckState.deck.length === 0) {
     roundStatus = 'ENDS'
-    winnerId = determineHighestCardWinner(state) // tiebreaker inside
+    const [winner, reason] = determineHighestCardWinner(state)
+    winnerId = winner
+    nextState = logEntry(state, `END OF ROUND — ${reason}`)
   }
 
+  /* --- attach round result metadata ---------------------------- */
   return {
-    ...state,
+    ...nextState,
     game: {
-      ...state.game,
-      roundStatus, // driver or guard will emit ROUND_ENDS/CONTINUES
-      roundWinner: winnerId // may be null if absolute tie
+      ...nextState.game,
+      roundStatus,
+      roundWinner: winnerId // may be null (draw or continues)
     }
   }
 }

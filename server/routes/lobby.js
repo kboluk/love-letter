@@ -23,7 +23,6 @@ router.get('/join', authGuard, async (req, res) => {
     broadcastTableStatus()
     const allSeatsFull = tableS.player1 && tableS.player2 && tableS.player3 && tableS.player4
     if (allSeatsFull) {
-      console.log('game version: ', gameVersion())
       if (gameVersion() === 0) {
         startGame()
         broadcastGameState()
